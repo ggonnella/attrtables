@@ -10,7 +10,7 @@ if not sys.version_info[0] == 3:
 
 setup(name='attrtables',
       version='1.0',
-      description='Storing attribute values in columns of multiple tables',
+      description='Storing a dynamic set of entity attributes in a set of database tables',
       long_description=readme(),
       long_description_content_type="text/markdown",
       url='https://github.com/ggonnella/attrtables',
