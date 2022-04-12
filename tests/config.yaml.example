@@ -1,0 +1,6 @@
+database: attrtables_test_db
+username: attrtables_test_user
+password: attrtables_test_pass
+socket: attrtables.sock
+drivername: "mysql+mysqldb"
+host: localhost
