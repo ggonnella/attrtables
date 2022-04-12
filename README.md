@@ -79,10 +79,7 @@ passed as the ``tablename_prefix`` argument.
 
 A table for storing attribute names and database (and, optionally, attribute
 computation groups) is needed. A database model for such a class is provided
-(``AttributeDefinition``) and used by default by ``AttributeValueTables``. If
-this model is used, the table name is by default ``attribute_definition``, but
-can be set to a different value using the keyword argument
-``attrdef_tablename`` of the constructor.
+(``AttributeDefinition``) and used by default by ``AttributeValueTables``.
 
 Optionally, the table can be defined using a different model (for example for
 defining further columns). In this case the model class is passed as the
