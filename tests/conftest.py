@@ -5,9 +5,8 @@ from sqlalchemy import create_engine, inspect, exc
 from sqlalchemy.orm import Session
 from sqlalchemy.engine.url import URL
 import yaml
-from attrtables.attribute_definition import AttributeDefinition
 
-VERBOSE_CONNECTION = False
+VERBOSE_CONNECTION = True
 
 @pytest.fixture(scope="session")
 def connection_string():
@@ -26,27 +25,10 @@ def connection_string():
   return URL.create(**args)
 
 @pytest.fixture(scope="session")
-def engine(connection_string):
-  result = create_engine(connection_string, echo=VERBOSE_CONNECTION,
+def connection(connection_string):
+  engine = create_engine(connection_string, echo=VERBOSE_CONNECTION,
                          future=True)
-  yield result
-  result.dispose()
-
-@pytest.fixture(scope="session")
-def connection(engine):
-  result = engine.connect()
-  yield result
-  result.close()
-
-@pytest.fixture(scope="session")
-def session(connection):
-  with connection.begin():
-    result = Session(bind=connection)
-    yield result
-    result.commit()
-
-@pytest.fixture(scope="session")
-def attrdefclass(connection):
-  AttributeDefinition.metadata.create_all(connection)
-  yield AttributeDefinition
-  AttributeDefinition.metadata.drop_all(connection)
+  with engine.connect() as conn:
+    with conn.begin():
+      yield conn
+      conn.commit()

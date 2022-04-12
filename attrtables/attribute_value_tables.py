@@ -11,7 +11,7 @@ from sqlalchemy_repr import PrettyRepresentableBase
 import ast
 from collections import Counter
 from attrtables.attribute_value_mixin import AttributeValueMixin
-from attribute_definitions import AttributeDefinition
+from attrtables.attribute_definition import AttributeDefinition
 
 Base = declarative_base(cls=PrettyRepresentableBase)
 
@@ -27,8 +27,7 @@ class AttributeValueTables():
   DEFAULT_TARGET_N_COLUMNS = 64
   DEFAULT_COMPUTATION_ID_TYPE = sqlalchemy.types.BINARY(16)
   DEFAULT_ENTITY_ID_TYPE = sqlalchemy.types.String(64)
-  DEFAULT_ATTRDEF_TABLENAME = "attribute_definitions"
-  DEFAULT_TABLENAME_PREFIX = "attribute_values_t"
+  DEFAULT_TABLENAME_PREFIX = "attribute_value_t"
   VALUE_COLUMN_SUFFIX = "_v"
   COMPUTATION_COLUMN_SUFFIX = "_c"
   COMPUTATION_GROUP_COLUMN_SUFFIX = "_g"
@@ -45,8 +44,8 @@ class AttributeValueTables():
         self._ncols[sfx] = len(cnames)
         cnames.remove("entity_id")
         anames = Counter(cn.rsplit("_", 1)[0] for cn in cnames \
-            if not cn.endswith(COMPUTATION_COLUMN_SUFFIX) and \
-               not cn.endswith(COMPUTATION_GROUP_COLUMN_SUFFIX))
+            if not cn.endswith(self.COMPUTATION_COLUMN_SUFFIX) and \
+               not cn.endswith(self.COMPUTATION_GROUP_COLUMN_SUFFIX))
         self._t2a[sfx] = anames
         for an in anames:
           if an in self._a2t:
@@ -55,7 +54,7 @@ class AttributeValueTables():
           self._a2t[an] = sfx
         if self.support_computation_groups:
           gnames = set(cn.rsplit("_", 1)[0] for cn in cnames \
-              if cn.endswith(COMPUTATION_GROUP_COLUMN_SUFFIX))
+              if cn.endswith(self.COMPUTATION_GROUP_COLUMN_SUFFIX))
           self._t2g[sfx] = {gname: set(session.execute(\
                 select(self.attrdef_class.name).filter(\
               self.attrdef_class.computation_group == gname,
@@ -64,7 +63,6 @@ class AttributeValueTables():
 
   def __init__(self, connectable,
                attrdef_class = AttributeDefinition,
-               attrdef_tablename = DEFAULT_ATTRDEF_TABLENAME,
                entity_id_type = DEFAULT_ENTITY_ID_TYPE,
                tablename_prefix = DEFAULT_TABLENAME_PREFIX,
                target_n_columns = DEFAULT_TARGET_N_COLUMNS,
@@ -102,10 +100,8 @@ class AttributeValueTables():
     that is needed for applications external to this module).
 
     The attribute definitions are stored using a separate class, which can be
-    passed as the attrdefclass argument. The default is to use the
-    AttributeDefinition class. In that case, the tablename is by default
-    "attribute_definition", but can be set to a different value by setting the
-    attrdef_tablename argument.
+    passed as the attrdef_class argument. The default is to use the
+    AttributeDefinition class.
 
     ## Tables name prefix
 
@@ -149,9 +145,8 @@ class AttributeValueTables():
     """
     self.connectable = connectable
     self.attrdef_class = attrdef_class
-    if self.attrdef_class == AttributeDefinition:
-      AttributeDefinition.__set_tablename__ = attrdef_tablename
-      AttributeDefinition.create_table(self.connectable)
+    self.attrdef_class.metadata.bind = connectable
+    self.attrdef_class.metadata.create_all()
     self.tablename_prefix = tablename_prefix
     self.computation_id_type = computation_id_type
     self.entity_id_type = entity_id_type
@@ -189,7 +184,7 @@ class AttributeValueTables():
     vcolnames = self._vcolnames(attribute, self._t2a[t_sfx][attribute])
     ccolname = None
     if self.support_computation_ids:
-      ccolname = self._ccolname(attribute, t_sfx)
+      ccolname = self._ccolname(attribute)
     gcolname = None
     if self.support_computation_groups:
       gcolname = self._gcolname(attribute, t_sfx)
@@ -209,7 +204,7 @@ class AttributeValueTables():
   def attribute_computation_column(self, attribute):
     if self.support_computation_ids:
       t_sfx = self._a2t.get(attribute, None)
-      return self._ccolname(attribute, t_sfx) if t_sfx else None
+      return self._ccolname(attribute) if t_sfx else None
     else:
       return None
 
@@ -487,7 +482,8 @@ class AttributeValueTables():
       raise RuntimeError(f"Cannot create table: suffix {sfx} is not unique")
     klass = type(self.tablename(sfx), (AttributeValueMixin, Base),
                  {"__tablenamepfx__": self.tablename_prefix,
-                  "__tablenamesfx__": sfx})
+                  "__tablenamesfx__": sfx,
+                  "__entity_id_type__": self.entity_id_type})
     klass.metadata.tables[klass.__tablename__].create(self.connectable)
     self._t2a[sfx] = Counter()
     self._t2g[sfx] = {}
@@ -545,28 +541,24 @@ class AttributeValueTables():
     self.create_table(sfx)
     return sfx
 
-  @staticmethod
-  def _vcolnames(a_name, nelems):
-    if nelems == 1: return [f"{a_name}{VALUE_COLUMN_SUFFIX}"]
-    else:           return [f"{a_name}{VALUE_COLUMN_SUFFIX}{i}" \
+  def _vcolnames(self, a_name, nelems):
+    if nelems == 1: return [f"{a_name}{self.VALUE_COLUMN_SUFFIX}"]
+    else:           return [f"{a_name}{self.VALUE_COLUMN_SUFFIX}{i}" \
                             for i in range(nelems)]
 
-  @classmethod
-  def _vcoldefs(cls, a_name, a_datatypes):
+  def _vcoldefs(self, a_name, a_datatypes):
     return [(cn, dt) for cn, dt in zip(\
-        cls._vcolnames(a_name, len(a_datatypes)), a_datatypes)]
+        self._vcolnames(a_name, len(a_datatypes)), a_datatypes)]
 
   @staticmethod
   def _coldefstr(coldefs):
     return ",".join([f"{n} {dt}" for n, dt in coldefs])
 
-  @staticmethod
-  def _ccolname(a_name):
-    return a_name+COMPUTATION_COLUMN_SUFFIX
+  def _ccolname(self, a_name):
+    return a_name+self.COMPUTATION_COLUMN_SUFFIX
 
-  @staticmethod
-  def _gcolname(grp_name):
-    return grp_name+COMPUTATION_GROUP_COLUMN_SUFFIX
+  def _gcolname(self, grp_name):
+    return grp_name+self.COMPUTATION_GROUP_COLUMN_SUFFIX
 
   @staticmethod
   def _parse_datatype_def(datatype_def):
@@ -618,7 +610,7 @@ class AttributeValueTables():
     adef = self.attrdef_class(name = name, datatype = datatype_def,
                               **kwargs)
     a_datatypes = self._parse_datatype_def(datatype_def)
-    t_sfx = self._place_for_new_attr(len(a_datatypes), grp)
+    t_sfx = self._place_for_new_attr(len(a_datatypes), computation_group)
     tn = self.tablename(t_sfx)
     coldefs = self._vcoldefs(name, a_datatypes)
     if self.support_computation_ids:

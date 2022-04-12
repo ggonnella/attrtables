@@ -8,8 +8,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy.engine.url import URL
 from attrtables.attribute_value_tables import AttributeValueTables
 
-def test_scalar_attributes(connection, attrdefclass):
-  avt = AttributeValueTables(connection, attrdefclass)
+def test_scalar_attributes(connection):
+  avt = AttributeValueTables(connection)
   for atype in ["Integer", "Float", "String(50)", "Text", "Boolean"]:
     aname = atype[0].lower()
     avt.create_attribute(aname, atype)
@@ -20,9 +20,11 @@ def test_scalar_attributes(connection, attrdefclass):
     assert(ccol == f"{aname}_c")
     assert(gcol == None)
     avt.destroy_attribute(aname)
+    avt.check_consistency()
+  avt.check_consistency()
 
-def test_multiscalar_attributes(connection, attrdefclass):
-  avt = AttributeValueTables(connection, attrdefclass)
+def test_multiscalar_attributes(connection):
+  avt = AttributeValueTables(connection)
   for atype in ["Integer;Float", "String(50);Text", "Boolean;Integer;Float"]:
     aname = atype[0].lower()
     avt.create_attribute(aname, atype)
@@ -34,8 +36,8 @@ def test_multiscalar_attributes(connection, attrdefclass):
     assert(gcol == None)
     avt.destroy_attribute(aname)
 
-def test_array_attributes(connection, attrdefclass):
-  avt = AttributeValueTables(connection, attrdefclass)
+def test_array_attributes(connection):
+  avt = AttributeValueTables(connection)
   for atype, anum in [("Integer[10]", 10),
                       ("Boolean;String(50)[3];Integer;Text[3];Float", 9)]:
     aname = atype[0].lower()
@@ -48,8 +50,8 @@ def test_array_attributes(connection, attrdefclass):
     assert(gcol == None)
     avt.destroy_attribute(aname)
 
-def test_create_computation_group(connection, attrdefclass):
-  avt = AttributeValueTables(connection, attrdefclass)
+def test_create_computation_group(connection):
+  avt = AttributeValueTables(connection)
   atypes = ["Integer", "Float", "String(50)", "Text", "Boolean"]
   for atype in atypes:
     aname = atype[0].lower()
@@ -66,24 +68,24 @@ def test_create_computation_group(connection, attrdefclass):
     aname = atype[0].lower()
     avt.destroy_attribute(aname)
 
-def test_attribute_destruction(connection, attrdefclass):
-  avt = AttributeValueTables(connection, attrdefclass)
+def test_attribute_destruction(connection):
+  avt = AttributeValueTables(connection)
   avt.create_attribute("a", "Integer")
   assert(str(avt.attribute_class("a").__name__) == "attribute_value_t0")
-  attr_records = Session(connection).execute(select(attrdefclass).\
-      where(attrdefclass.name == "a")).scalars().all()
+  attr_records = Session(connection).execute(select(avt.attrdef_class).\
+      where(avt.attrdef_class.name == "a")).scalars().all()
   assert(len(attr_records) == 1)
   assert(attr_records[0].name == "a")
   avt.destroy_attribute("a")
   assert(avt.attribute_class("a") == None)
-  attr_records = Session(connection).execute(select(attrdefclass).\
-      where(attrdefclass.name == "a")).scalars().all()
+  attr_records = Session(connection).execute(select(avt.attrdef_class).\
+      where(avt.attrdef_class.name == "a")).scalars().all()
   assert(len(attr_records) == 0)
 
-def test_custom_table_prefix(connection, attrdefclass):
+def test_custom_table_prefix(connection):
+  avt = AttributeValueTables(connection,
+                             tablename_prefix="custom_tabpfx_")
   try:
-    avt = AttributeValueTables(connection, attrdefclass,
-                              tablename_prefix="custom_tabpfx_")
     avt.create_attribute("a", "Integer")
     avt.check_consistency()
     klass = avt.attribute_class("a")
@@ -114,9 +116,9 @@ VALUES_B_TO_H = {\
 COMPUTATION_ID1 = uuid.UUID(f'00000000-0000-0000-0000-000000000001').bytes
 COMPUTATION_ID2 = uuid.UUID(f'00000000-0000-0000-0000-000000000002').bytes
 
-def test_attr_n_columns_larger_than_target(connection, attrdefclass):
+def test_attr_n_columns_larger_than_target(connection):
+  avt = AttributeValueTables(connection, target_n_columns = 3)
   try:
-    avt = AttributeValueTables(connection, attrdefclass, target_n_columns = 3)
     avt.create_attribute("a", "Integer[10]")
     assert(avt.attribute_class("a").__name__ == "attribute_value_t0")
     assert(avt.attribute_value_columns("a") == [f"a_v{i}" for i in range(10)])
@@ -131,8 +133,8 @@ def test_attr_n_columns_larger_than_target(connection, attrdefclass):
     avt.destroy_attribute("a")
     avt.destroy_attribute("b")
 
-def test_multiple_tables(connection, attrdefclass):
-  avt = AttributeValueTables(connection, attrdefclass, target_n_columns = 9)
+def test_multiple_tables(connection):
+  avt = AttributeValueTables(connection, target_n_columns = 9)
   create_attributes_a_to_h(avt)
   try:
     avt.check_consistency()
@@ -155,8 +157,8 @@ def test_multiple_tables(connection, attrdefclass):
     for aname in ["a"] + ATTRNAMES_B_TO_H:
       avt.destroy_attribute(aname)
 
-def test_set_and_query(connection, attrdefclass):
-  avt = AttributeValueTables(connection, attrdefclass, target_n_columns = 9)
+def test_set_and_query(connection):
+  avt = AttributeValueTables(connection, target_n_columns = 9)
   create_attributes_a_to_h(avt)
   try:
     avt.check_consistency()
@@ -193,18 +195,3 @@ def test_set_and_query(connection, attrdefclass):
   finally:
     for aname in ["a"] + ATTRNAMES_B_TO_H:
       avt.destroy_attribute(aname)
-
-  # LOAD COMPUTATION
-  # avt.load_computation(computation_id, plugin.OUTPUT, args["<results>"])
-  #
-  # def load_computation(self, computation_id, attributes, inputfile,
-  #                    tmpsfx = "temporary"):
-  #
-
-# db_attributes to create the attributes
-# db_load_results
-
-
-    # still to be implemented:
-    #   information reports (how many attributes, which datatypes,
-    #   how many values, computation IDs, etc.)

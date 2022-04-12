@@ -13,7 +13,7 @@ class AttributeValueMixin:
   __table_args__["autoload_replace"] = True
 
   @declared_attr
-  def entity_id(self):
+  def entity_id(cls):
     return Column(cls.__entity_id_type__, primary_key = True)
 
   @declared_attr
