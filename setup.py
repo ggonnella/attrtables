@@ -9,7 +9,7 @@ if not sys.version_info[0] == 3:
   sys.exit("Sorry, only Python 3 is supported")
 
 setup(name='attrtables',
-      version='1.0',
+      version='1.1',
       description='Storing a dynamic set of entity attributes in a set of database tables',
       long_description=readme(),
       long_description_content_type="text/markdown",
