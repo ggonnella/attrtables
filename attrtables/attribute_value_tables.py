@@ -585,7 +585,7 @@ class AttributeValueTables():
       result += [dt]*n
     return result
 
-  def create_attribute(self, name, datatype_def, computation_group=None,
+  def create_attribute(self, name, datatype, computation_group=None,
                        **kwargs):
     """
     Create a new attribute record in the attribute_definition table
@@ -607,9 +607,9 @@ class AttributeValueTables():
                          self._a2t[name])
     if self.support_computation_groups and computation_group is not None:
       kwargs["computation_group"] = computation_group
-    adef = self.attrdef_class(name = name, datatype = datatype_def,
+    adef = self.attrdef_class(name = name, datatype = datatype,
                               **kwargs)
-    a_datatypes = self._parse_datatype_def(datatype_def)
+    a_datatypes = self._parse_datatype_def(datatype)
     t_sfx = self._place_for_new_attr(len(a_datatypes), computation_group)
     tn = self.tablename(t_sfx)
     coldefs = self._vcoldefs(name, a_datatypes)
