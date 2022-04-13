@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+#
+# (c) 2022 Giorgio Gonnella, University of Goettingen, Germany
+#
 """
 Mixin used as common base for each element of the Attribute Value tables set
 """

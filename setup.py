@@ -1,3 +1,6 @@
+#
+# (c) 2022 Giorgio Gonnella, University of Goettingen, Germany
+#
 from setuptools import setup, find_packages
 
 def readme():

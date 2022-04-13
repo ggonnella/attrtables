@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+#
+# (c) 2022 Giorgio Gonnella, University of Goettingen, Germany
+#
 """
 DB Schema for tables storing attribute values.
 """
