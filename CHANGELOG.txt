@@ -1,3 +1,7 @@
+=== 1.1.1 ===
+- bug fixes:
+  - computation group assignment on attribute creation
+
 === 1.1 ===
 - bug fixes
 - added CHANGELOG and CONTRIBUTORS

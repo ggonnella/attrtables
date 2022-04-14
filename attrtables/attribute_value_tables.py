@@ -617,11 +617,12 @@ class AttributeValueTables():
     coldefs = self._vcoldefs(name, a_datatypes)
     if self.support_computation_ids:
       coldefs.append((self._ccolname(name), self.computation_id_type))
-    if self.support_computation_groups and \
-        computation_group and (computation_group not in self._t2g[t_sfx]):
-      coldefs.append((self._gcolname(computation_group),
-                      self.computation_id_type))
-      self._t2g[t_sfx][computation_group] = {name}
+    if self.support_computation_groups and computation_group:
+      if computation_group not in self._t2g[t_sfx]:
+        coldefs.append((self._gcolname(computation_group),
+                        self.computation_id_type))
+        self._t2g[t_sfx][computation_group] = set()
+      self._t2g[t_sfx][computation_group].add(name)
     with Session(self.connectable) as session:
       session.add(adef)
       session.execute(text(f"ALTER TABLE {tn} "+\
