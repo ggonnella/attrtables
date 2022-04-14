@@ -1,13 +1,9 @@
 #
 # (c) 2022 Giorgio Gonnella, University of Goettingen, Germany
 #
-import pytest
-from collections import defaultdict
-import os
 import uuid
-from sqlalchemy import create_engine, inspect, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
-from sqlalchemy.engine.url import URL
 from attrtables.attribute_value_tables import AttributeValueTables
 
 def test_scalar_attributes(connection):
