@@ -1,6 +1,8 @@
 === 1.1.1 ===
 - bug fixes:
   - computation group assignment on attribute creation
+- new features:
+  - implement drop_all()
 
 === 1.1 ===
 - bug fixes

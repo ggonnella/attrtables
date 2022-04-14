@@ -156,6 +156,7 @@ class AttributeValueTables():
     self.support_computation_ids = support_computation_ids
     self.support_computation_groups = support_computation_ids and \
                                         support_computation_groups
+    self._drop_temporary()
     with Session(connectable) as session:
       inspector = inspect(connectable)
       self._init_attributes_maps(inspector, session)
@@ -474,6 +475,20 @@ class AttributeValueTables():
     del self._t2a[sfx]
     del self._t2g[sfx]
     del self._ncols[sfx]
+
+  def _drop_temporary(self, tmpsfx = "temporary"):
+    with Session(self.connectable) as session:
+      tmpname = self.tablename(tmpsfx)
+      session.execute(f"DROP TABLE IF EXISTS {tmpname}")
+      session.commit()
+
+  def drop_all(self, tmpsfx = "temporary"):
+    if self._t2a:
+      sfx = list(self._t2a.keys())[0]
+      klass = self.get_class(sfx)
+      klass.metadata.drop_all(self.connectable)
+    self._drop_temporary(tmpsfx)
+    self.attrdef_class.metadata.drop_all()
 
   def create_table(self, sfx):
     """
