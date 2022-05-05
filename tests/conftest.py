@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.engine.url import URL
 import yaml
 
-VERBOSE_CONNECTION = True
+VERBOSE_CONNECTION = False
 
 @pytest.fixture(scope="session")
 def connection_string():

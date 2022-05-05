@@ -158,6 +158,7 @@ def test_multiple_tables(connection):
 def test_set_and_query(connection):
   avt = AttributeValueTables(connection, target_n_columns = 9)
   create_attributes_a_to_h(avt)
+  exp_attribute_names = set(["a"] + ATTRNAMES_B_TO_H)
   try:
     avt.check_consistency()
     avt.set_attribute("a", VALUES_A, COMPUTATION_ID1)
@@ -190,6 +191,7 @@ def test_set_and_query(connection):
     assert(results == {"e1": (7, COMPUTATION_ID2),
                        "e2": (70, COMPUTATION_ID1),
                        "e3": (700, COMPUTATION_ID1)})
+    assert(set(avt.attribute_names) == exp_attribute_names)
   finally:
-    for aname in ["a"] + ATTRNAMES_B_TO_H:
+    for aname in exp_attribute_names:
       avt.destroy_attribute(aname)

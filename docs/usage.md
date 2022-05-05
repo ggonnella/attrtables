@@ -217,8 +217,16 @@ attributes.
 
 ## Destroying an attribute
 
-To destroy an attribute the following method of the AttributeValueTables
+To destroy an attribute the following method of the ``AttributeValueTables``
 instance is used:
 ```
 avt.destroy_attribute(attribute_name)
+```
+
+## Listing the attributes
+
+A list of the attributes is provided by the following property of the
+``AttributeValueTables`` instance:
+```
+avt.attribute_names
 ```
