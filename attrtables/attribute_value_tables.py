@@ -243,9 +243,14 @@ class AttributeValueTables():
     gcolname = self.attribute_computation_group_column(attribute)
     return (klass, vcols, ccolname, gcolname)
 
-  def query_attribute(self, attribute, entity_ids):
+  def query_attribute(self, attribute, entity_ids = None):
     """
     Query attribute values for a list of entity ids
+
+    Arguments:
+      attribute: name of the attribute
+      entity_ids: list of entity ids
+                  (if none: all entities are queried)
 
     If computation IDs are enabled (default):
       a dictionary ``{entity_id: (attribute_values, computation_id)``},
@@ -264,7 +269,10 @@ class AttributeValueTables():
     """
     klass, vcolnames, ccolname, gcolname = self.attribute_access_data(attribute)
     session = Session(self.connectable)
-    rows = session.query(klass).filter(klass.entity_id.in_(entity_ids)).all()
+    if entity_ids:
+      rows = session.query(klass).filter(klass.entity_id.in_(entity_ids)).all()
+    else:
+      rows = session.query(klass).all()
     results = {}
     for row in rows:
       if len(vcolnames) == 1:

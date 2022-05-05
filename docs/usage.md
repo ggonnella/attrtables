@@ -208,6 +208,12 @@ To query the values of an attributes for a list of entities, the
 avt.query_attribute(attribute_name, [list_of_entity_ids])
 ```
 
+To query the values for all entities, do not pass a list of entities as
+second argument:
+```
+avt.query_attribute(attribute_name)
+```
+
 The return value is a dictionary, with an entry for each entity of the list for
 which a value of the attribute exists. The value of the dictionary entry is a
 tuple ``(attribute_value, computation_id)`` if computation IDs are supported

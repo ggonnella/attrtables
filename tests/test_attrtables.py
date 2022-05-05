@@ -163,7 +163,7 @@ def test_set_and_query(connection):
     avt.check_consistency()
     avt.set_attribute("a", VALUES_A, COMPUTATION_ID1)
     avt.set_attribute("d", {"e3": 700}, COMPUTATION_ID1)
-    results = avt.query_attribute("d", ["e1", "e2", "e3"])
+    results = avt.query_attribute("d")
     assert(results == {"e3": (700, COMPUTATION_ID1)})
     results = avt.query_attribute("a", ["e1"])
     assert(results == {"e1": (1, COMPUTATION_ID1)})
