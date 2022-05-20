@@ -1,7 +1,8 @@
 # AttrTables
 
-AttrTables is a library for creating a system for storing, a dynamic set of
-attributes for entities in a database.
+AttrTables is a library for storing attributes of entities in a database,
+where the entities are rows and the attributes are columns in an automatically
+managed set of tables.
 
 ## Basic concepts
 
@@ -15,6 +16,18 @@ stored for individual attributes and optionally also for groups of attributes.
 
 The attribute columns are automatically spread among multiple database tables,
 so that the total number of columns does not exceed a given limit.
+
+## Comparison to entity-attribute-value
+
+An alternative to the model implemented by AttrTables is the
+entity-attribute-value (EAV) model, in which there is a single table, where
+entities are rows and the attribute name and value are two columns.
+
+The EAV model has some disadvantages, compared to AttrTables:
+- the values of a single attribute generally cannot be indexed
+- the values must be stored in a generic data type (such as blobs),
+  and the application must convert back and forth to the correct
+  datatype
 
 ## Setup
 The library is based on SqlAlchemy, which must be installed (see
