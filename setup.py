@@ -12,10 +12,11 @@ if not sys.version_info[0] == 3:
   sys.exit("Sorry, only Python 3 is supported")
 
 setup(name='attrtables',
-      version='1.1.2',
+      version='1.2',
       description='Storing a dynamic set of entity attributes in a set of database tables',
       long_description=readme(),
       long_description_content_type="text/markdown",
+      install_requires = ["sqlalchemy", "sqlalchemy_repr"],
       url='https://github.com/ggonnella/attrtables',
       keywords="database, attributes, entities, sqlalchemy",
       author='Giorgio Gonnella',

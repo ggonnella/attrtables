@@ -1,3 +1,6 @@
+=== 1.2 ===
+- fixed package requirements specification system
+
 === 1.1.2 ===
 - expose and document attribute_names property
 - allow to query for all entities
